@@ -43,14 +43,19 @@ class Loop
 	end
 
 	def show_summary
-		headers = ["timestamp", "cpm", "length (characters)", "accuracy (%), path"]
+		headers = ["timestamp", "cpm", "length (characters)", "accuracy (%)", "path"]
+		max_path_length = 40
 		rows = @database.get_all_sessions.slice(0..20).map { |s| 
+			path = s.path.split(//).last(max_path_length).join
+			if path.size != s.path.size
+				path = "..." + path
+			end
 			[
 				s.timestamp, 
 				(s.character_count / s.duration.to_f * 60).to_i, 
 				s.character_count, 
 				((s.character_count - s.error_count) / s.character_count.to_f * 100).to_i,
-				s.path
+				path
 			] 
 		}
 		@window << Table.new(rows.unshift(headers)).to_s

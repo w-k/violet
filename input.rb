@@ -151,7 +151,7 @@ class Input
 
 
 	def get_character_count
-		return @reference_text.map { |line| line.size }.sum
+		return @reference_text.map { |line| line[1].sub(/^·*/,'').size }.sum
 	end
 
 	def get_status

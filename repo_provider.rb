@@ -1,4 +1,5 @@
 require './logger'
+require './constants'
 
 class RepoProvider
 
@@ -16,7 +17,15 @@ class RepoProvider
 		# content_without_license_comments = content.sub(pattern, '').lstrip.chomp
 
 		max_index_length = lines.size.to_s.size
-		lines = content.lines.each_with_index.map{ |v,i| [i.to_s.rjust(max_index_length), v.lstrip.rstrip]}
+		lines = content.lines.each_with_index.map{ |v,i| 
+			padded_line_number = i.to_s.rjust(max_index_length)
+			text = v.chomp.gsub("\t", ' ' * CONSOLE_TAB_WIDTH)
+			initial_whitespace = text.match(/^\s*/)[0]
+			if initial_whitespace
+				text.sub!(/^\s*/, '·' * initial_whitespace.size)
+			end
+			[padded_line_number, text]
+		}
 		end_line_index= @start_line_index + @chunk_size-1
 		@end_line_index = end_line_index > lines.size ? 0 : end_line_index
 

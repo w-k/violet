@@ -1,6 +1,5 @@
 require './logger'
-
-CONSOLE_TAB_WIDTH = 8
+require './constants'
 
 class Input
 	def initialize(window)
@@ -10,20 +9,22 @@ class Input
 	end
 
 	def load(reference_text, origin)
-		@reference_text = reference_text[:lines].map{ |l| l[1] }
-		@indentations = @reference_text.map{ |line| line.match(/^\s*/)[0]}
+		@reference_text = reference_text[:lines]
+		@indentations = @reference_text.map{ |line| line[1].match(/^·*/)[0] }
 		@origin = origin 
 		@window.setpos(origin, 0)
 		@errors = 0
 		@accumulated_errors = 0
+		@window << reference_text[:lines].map{ |l| "#{l[0]}: " }[0]
 		@window << @indentations[0]
 		@typed_text = [@indentations[0].dup] 
 		@start_time = Time.now
 		@spaces = 0
+		@line_number_offset = get_formatted_line_number(@reference_text[0][0]).size
 	end
 
 	def reset
-		@reference_text = [""]
+		@reference_text = [["",""]]
 		@errors = 0
 		@accumulated_errors = 0
 		@typed_text = [""] 
@@ -33,7 +34,7 @@ class Input
 	end
 
 	def at_end?
-		@typed_text.length == @reference_text.length and @typed_text.last.length == @reference_text.last.length
+		@typed_text.length == @reference_text.length and @typed_text.last.length == @reference_text.last[1].length
 	end
 
 	def at_start?
@@ -90,7 +91,8 @@ class Input
 			with_error_checking{
 				@typed_text = @typed_text[0...-1]
 			}
-			@window.setpos(@window.cury - 1, get_length(@typed_text.last))
+			log(@typed_text.last.size)
+			@window.setpos(@window.cury - 1, @typed_text.last.size + @line_number_offset)
 		else
 			with_error_checking{
 				@typed_text = @typed_text[0...-1].push(@typed_text.last[0...-1])
@@ -105,7 +107,7 @@ class Input
 	end
 
 	def tab
-		4.times {
+		CONSOLE_TAB_WIDTH.times {
 			with_error_checking {
 				@typed_text << " " 
 			}
@@ -115,8 +117,13 @@ class Input
 		}
 	end
 
+	def get_formatted_line_number(line_number)
+		return "#{line_number}: "
+	end
+
 	def new_line
 		@window.setpos(@window.cury+1, 0)
+		@window << @reference_text.map{ |l| get_formatted_line_number(l[0]) }[@typed_text.length]
 		@window << @indentations[@typed_text.length] || ""
 		with_error_checking {
 			@typed_text.push(@indentations[@typed_text.length].dup || "")
@@ -129,9 +136,9 @@ class Input
 				if !@reference_text[index]
 					return false
 				end
-				return !@reference_text[index].start_with?(line)
+				return !@reference_text[index][1].start_with?(line)
 			end
-			if line != @reference_text[index]
+			if line != @reference_text[index][1]
 				return true
 			end
 		end
@@ -149,7 +156,7 @@ class Input
 
 	def get_status
 		return "lines: #{@typed_text.length}/#{@reference_text.length} " + 
-			"last line: #{@typed_text.last.length}/#{@reference_text.last.length} errors: #{@accumulated_errors}"
+			"last line: #{@typed_text.last.length}/#{@reference_text.last[1].length} errors: #{@accumulated_errors}"
 	end
 
 	def get_error_count

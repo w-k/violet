@@ -58,13 +58,13 @@ class Loop
 				path
 			] 
 		}
-		@window << Table.new(rows.unshift(headers)).to_s
+		@window << Table.new(rows,headers).to_s
 	end
 
 	def start
 		text = @provider.get_text
 		@display.load(text)
-		@input.load(text, @display.last_line + 2)
+		@input.load(text, @display.last_line + 4)
 
 		current_mode = :typing
 		mode_handlers = { 
@@ -81,9 +81,7 @@ class Loop
 					@window.setpos(0, 0)
 					text = @provider.get_text
 					@display.load(text)
-					@input.load(text, @display.last_line + 2)
-				elsif key == KEY[:tab]
-					@input.tab
+					@input.load(text, @display.last_line + 4)
 				elsif key == KEY[:enter]
 					@input.new_line
 				elsif key == KEY[:ctrl_s]
@@ -92,7 +90,7 @@ class Loop
 					@provider.mark_text_used
 					text = @provider.get_text
 					@display.load(text)
-					@input.load(text, @display.last_line + 2)
+					@input.load(text, @display.last_line + 4)
 				elsif key == KEY[:ctrl_b]
 					log("breadcrumbs: #{@breadcrumbs.join(' ')}")
 					@breadcrumbs = []
@@ -119,7 +117,7 @@ class Loop
 					@window.setpos(0, 0)
 					text = @provider.get_text
 					@display.load(text)
-					@input.load(text, @display.last_line + 2)
+					@input.load(text, @display.last_line + 4)
 				elsif key == KEY[:escape]
 					exit(0)
 				end
@@ -130,10 +128,6 @@ class Loop
 			mode_handlers[current_mode].call(@window.getch)
 			@window.refresh
 			if current_mode == :typing
-				push(@window, @display.last_line+1, 0) do 
-					@window.clrtoeol
-					@window.attron(color_pair(COLOR_BLUE)) { @window << @input.get_status}
-				end
 				@display.set_error(@input.get_current_error_count > 0)
 			end
 		end

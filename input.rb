@@ -84,9 +84,6 @@ class Input
 		if at_start?
 			return
 		end
-		# if !is_current_index_correct
-		# 	@errors -=1
-		# end
 		if @typed_text.last == (@indentations[@typed_text.length - 1] || "")
 			with_error_checking{
 				@typed_text = @typed_text[0...-1]
@@ -104,17 +101,6 @@ class Input
 
 	def get_length(text)
 		return text.chars.map{ |c| c == "\t" ? CONSOLE_TAB_WIDTH : 1}.sum
-	end
-
-	def tab
-		CONSOLE_TAB_WIDTH.times {
-			with_error_checking {
-				@typed_text << " " 
-			}
-			write_to_screen {
-				@window << " " 
-			}
-		}
 	end
 
 	def get_formatted_line_number(line_number)

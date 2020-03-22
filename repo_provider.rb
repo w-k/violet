@@ -8,16 +8,10 @@ class RepoProvider
 		@chunk_size = chunk_size
 		@whitelist_pattern = whitelist_pattern
 		@blacklist_pattern = blacklist_pattern
-	end
-
-	def get_text
 		@path, @use_count, @start_line_index = @repo.get(@whitelist_pattern, @blacklist_pattern)
 		content = File.open(@path).read.scrub
-		pattern = /\/\*.*?license.*?\*\//im
-		# content_without_license_comments = content.sub(pattern, '').lstrip.chomp
-
-		max_index_length = lines.size.to_s.size
-		lines = content.lines.each_with_index.map{ |v,i| 
+		max_index_length = content.lines.size.to_s.size
+		@lines = content.lines.each_with_index.map{ |v,i| 
 			padded_line_number = i.to_s.rjust(max_index_length)
 			text = v.chomp.gsub("\t", ' ' * CONSOLE_TAB_WIDTH)
 			initial_whitespace = text.match(/^\s*/)[0]
@@ -26,10 +20,12 @@ class RepoProvider
 			end
 			[padded_line_number, text]
 		}
-		end_line_index= @start_line_index + @chunk_size-1
-		@end_line_index = end_line_index > lines.size ? 0 : end_line_index
+	end
 
-		chunk = lines[@start_line_index..@end_line_index]
+	def get_text
+		end_line_index= @start_line_index + @chunk_size-1
+		@end_line_index = [end_line_index, @lines.size - 1].min
+		chunk = @lines[@start_line_index..@end_line_index]
 		while chunk.first[1].strip.empty?
 			chunk = chunk[1..-1]
 		end
@@ -40,12 +36,15 @@ class RepoProvider
 			:path => @path,
 			:lines => chunk,
 			:start_line => @start_line_index,
-			:size => lines.size
+			:size => @lines.size
 		}
 	end
 
 	def mark_text_used
-		all_text_used = @end_line_index == 0
-		@repo.set(@path, all_text_used ? @use_count + 1 : @use_count, @end_line_index+1)
+		if @end_line_index >= @lines.size 
+			@repo.set(@path, @use_count + 1, 0)
+		else
+			@repo.set(@path, @use_count, @end_line_index+1)
+		end
 	end
 end

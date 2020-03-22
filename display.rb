@@ -1,4 +1,5 @@
 require './push'
+require './table'
 
 
 
@@ -17,13 +18,14 @@ class Display
 			@error = error
 			color = color_pair(COLOR_YELLOW)
 			if @error
+				log('set_error')
 				color = color_pair(COLOR_RED)
 			end
-			push(@window, 2, 0) do 
+			push(@window, 4, 0) do 
 				@text[:lines].each { |line| 
 					@window.clrtoeol
 					@window.setpos(@window.cury + 1, 0)
-					@window.setpos(2, 0)
+					@window.setpos(4, 0)
 				}
 				@window.attron(color) { 
 					@window << @text[:lines].map {|l| "#{l[0]}: #{l[1]}"}.join("⏎\n")
@@ -36,11 +38,11 @@ class Display
 		if @error
 			return
 		end
-		push(@window, 2, 0) do 
+		push(@window, 4, 0) do 
 			@text[:lines].each { |line| 
 				@window.clrtoeol
 				@window.setpos(@window.cury + 1, 0)
-				@window.setpos(2, 0)
+				@window.setpos(4, 0)
 			}
 			for line_index in 0..@text[:lines].size-1
 				line = @text[:lines][line_index]
@@ -78,10 +80,10 @@ class Display
 
 	def load(text)
 		@text = text
-		@window.attron(color_pair(COLOR_BLUE)) { 
+		@window.attron(color_pair(COLOR_WHITE)) { 
 			@window << "#{@text[:path]} #{@text[:size]}"
 		}
-		@window.setpos(@window.cury + 2, 0)
+		@window.setpos(@window.cury + 4, 0)
 		@window.attron(color_pair(COLOR_YELLOW)) { 
 			@window << @text[:lines].map {|l| "#{l[0]}: #{l[1]}"}.join("⏎\n")
 		}

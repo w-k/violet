@@ -8,6 +8,9 @@ class RepoProvider
 		@chunk_size = chunk_size
 		@whitelist_pattern = whitelist_pattern
 		@blacklist_pattern = blacklist_pattern
+	end
+
+	def get_text
 		@path, @use_count, @start_line_index = @repo.get(@whitelist_pattern, @blacklist_pattern)
 		content = File.open(@path).read.scrub
 		max_index_length = content.lines.size.to_s.size
@@ -20,9 +23,6 @@ class RepoProvider
 			end
 			[padded_line_number, text]
 		}
-	end
-
-	def get_text
 		end_line_index= @start_line_index + @chunk_size-1
 		@end_line_index = [end_line_index, @lines.size - 1].min
 		chunk = @lines[@start_line_index..@end_line_index]

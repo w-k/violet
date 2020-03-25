@@ -41,7 +41,7 @@ class RepoProvider
 	end
 
 	def mark_text_used
-		if @end_line_index >= @lines.size 
+		if @end_line_index >= @lines.size - 1
 			@repo.set(@path, @use_count + 1, 0)
 		else
 			@repo.set(@path, @use_count, @end_line_index+1)
